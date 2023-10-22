@@ -16,7 +16,6 @@ calendar=  {
 
 def verify():
     global calendar
-    notCheckCentury = True
 
     while True:
         userInput = input('please enter your birth number (rodni cislo jako): ')
