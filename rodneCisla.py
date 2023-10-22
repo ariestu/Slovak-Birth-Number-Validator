@@ -1,21 +1,23 @@
 import sys #for exit
 import datetime #for verifying age
 
-today = datetime.date.today()
-day = today.day
-month = today.month
-year = today.year
-
-ageLimit = 100
-
-calendar=  {
+def main():
+    calendar=  {
     'months': ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'],
     'days': [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     #storocia nejestvuju
-}
+    }
 
-def verify():
-    global calendar
+    ageLimit = 100
+
+    verify(calendar, ageLimit)
+
+def verify(calendar, ageLimit):
+
+    today = datetime.date.today()
+    day = today.day
+    month = today.month
+    year = today.year
 
     while True:
         userInput = input('please enter your birth number (rodni cislo jako): ')
@@ -122,7 +124,17 @@ def verify():
                                                 print('fatal error; sys_exit initiated')
                                                 sys.exit(1)
 
-                                            output(controlDigit, sex, userAge, userBirthDay, calendar['months'][int(userBirthMonth)-1], userBirthYear, hadControlDigit)
+                                            if userAge >= 0:
+
+                                                if int(userBirthDay) == day and int(userBirthMonth) == month:
+                                                    birthDayToday = True
+                                                else:
+                                                    birthDayToday = False
+
+                                                output(controlDigit, sex, userAge, userBirthDay, calendar['months'][int(userBirthMonth)-1], userBirthYear, hadControlDigit, birthDayToday)
+
+                                            else:
+                                                print('the birth number has a birthday set in the future')
 
                                     else:
                                         print(' invalid control digit ')
@@ -133,7 +145,7 @@ def verify():
                                     print()
 
                             else:
-                                print(f' you enter a birth number suggesting you are more than {ageLimit} years old ')
+                                print(f' you enter a birth number suggesting you are more than {ageLimit} years old  ')
                                 print()
 
                         else:
@@ -153,15 +165,20 @@ def verify():
         except ValueError:
             print(' format error ')
 
-def output(controlDigit, sex, age, birtDay, birthMonth, birthYear, hadConrolDigit):
+def output(controlDigit, sex, age, birtDay, birthMonth, birthYear, hadConrolDigit, birthDayToday):
     try:
         if hadConrolDigit:
             controlDigitMessage = 'control digit ' + str(controlDigit) + ' is VALID'
         else:
             controlDigitMessage = 'you were born before 1954 and your birth number did not contain a control digit, if it did the control digit would be: ' + str(controlDigit)
 
+        if birthDayToday:
+            birthDayTodayMessage = '\n\n!happy b day!\n'
+        else:
+            birthDayTodayMessage = ''
+
         print() #empty line
-        print('YAY! THE PROVIDED BIRTH NUMBER IS VALID AND FOLLOWING INFORMATION WAS FETCHED')
+        print('YAY! THE PROVIDED BIRTH NUMBER IS VALID AND FOLLOWING INFORMATION WAS FETCHED' + birthDayTodayMessage)
         print(controlDigitMessage)
         print(f'Sex: {sex}')
         print(f'Age: {age}')
@@ -172,4 +189,4 @@ def output(controlDigit, sex, age, birtDay, birthMonth, birthYear, hadConrolDigi
         print('internal error - function did not pass values correctly, please try again')
         sys.exit(1)
 
-verify()
+main()
