@@ -10,10 +10,8 @@ ageLimit = 100
 
 calendar=  {
     'months': ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'],
-    'days': [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    'century': [1801, 1901, 2001] #nerozumiem ako to funguje ked sa clovek narodi rok pred novym storocim, prepokladam ze pre datum narodenia v roku 2000 je kontrolna cislica pre storocie 2 (20. storocie)
-    #no jako na tyhle kontrolni cislice se jeste kouknu
-    #NOT CHECK CENTURY ABY SA PRVA CISLICA ZA LOMKOU NEKONTROLOVALA
+    'days': [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    #storocia nejestvuju
 }
 
 def verify():
@@ -32,7 +30,15 @@ def verify():
             #checks for valid format (only numbers)
             userInputInt = int(userInput)
 
-            #checks for valid month nonation and assignes male/female
+            #accounts for 9 digit birth numbers
+            if int(userInput[0] + userInput[1]) <= 53 and len(userInput) == 9:
+                controlDigit = int(userInput) % 11 #user gets assigned a control digit he would have, program then continues to work with the NINE DIGIT BIRTH NUMBER
+                userInput = userInput + str(controlDigit)
+                hadControlDigit = False
+            else:
+                hadControlDigit = True
+
+            #assignes male/female if possible
             if len(userInput) == 10:
                 if userInput[2] == '0' or userInput[2] == '1' or userInput[2] == '5' or userInput[2] == '6':
 
@@ -53,36 +59,34 @@ def verify():
                     if isFemale:
                         userBirthMonth = int(userBirthMonth) - 50
 
-                    #assignes age if century is valid
-                    if int(userInput[6]) > 0 and int(userInput[6]) < 4 or notCheckCentury:
+                    #checks for valid month 
+                    if int(userBirthMonth) > 0 and int(userBirthMonth) < 13:
 
-                        #userBirthCentury = calendar['century'][int(userInput[6]) -1]
-                        userBirthYearTwoDigits = int(userInput[0] + userInput[1]) #only last two digits
+                        #checs for valid day and assigns
+                        userBirthDay = int(userInput[4] + userInput[5])
+                        if userBirthDay <= 31 and userBirthDay > 0:
 
-                        if userBirthYearTwoDigits > int(str(year)[2:]):
-                            userBirthCentury = 1901
-                        else:
-                            userBirthCentury = 2001
-                        
-                        #account for people born in (2000)
-                        if userBirthYearTwoDigits == 0:
-                            userBirthYearTwoDigits = 99
-                            accountforDifference = 0
-                        else:
-                            accountforDifference = 1
+                            userBirthYearTwoDigits = int(userInput[0] + userInput[1]) #only last two digits
 
-                        userAge = year - (userBirthCentury + userBirthYearTwoDigits) # for people who already had a birthday in the current year the age value is their real age -1 at this point!!
+                            #handles century person was born in
+                            if userBirthYearTwoDigits > int(str(year)[2:]) or hadControlDigit == False:
+                                userBirthCentury = 1901
+                            else:
+                                userBirthCentury = 2001
+                            
+                            #account for people born in (2000)
+                            if userBirthYearTwoDigits == 0:
+                                userBirthYearTwoDigits = 99
+                                accountforDifference = 0
+                            else:
+                                accountforDifference = 1
 
-                        userBirthYear = userBirthCentury + userBirthYearTwoDigits - accountforDifference #full birth year
-                        
-                        #checks if alive (max 100yo)
-                        if userAge <= ageLimit:
+                            userAge = year - (userBirthCentury + userBirthYearTwoDigits) # for people who already had a birthday in the current year the age value is their real age -1 at this point!!
 
-                            #checs for valid day and assigns
-                            userBirthDay = int(userInput[4] + userInput[5])
-
-                            if userBirthDay > 0 and userBirthDay < 32:
-                                userBirthDay = int(userInput[4] + userInput[5])
+                            userBirthYear = userBirthCentury + userBirthYearTwoDigits - accountforDifference #full birth year
+                            
+                            #checks if alive (max 100yo)
+                            if userAge <= ageLimit:
 
                                 #account for leap year
                                 if (userBirthYear % 4 == 0 and userBirthYear % 100 != 0) or (userBirthYear % 400 == 0):
@@ -119,7 +123,7 @@ def verify():
                                                 print('fatal error; sys_exit initiated')
                                                 sys.exit(1)
 
-                                            output(controlDigit, sex, userAge, userBirthDay, calendar['months'][int(userBirthMonth)-1], userBirthYear)
+                                            output(controlDigit, sex, userAge, userBirthDay, calendar['months'][int(userBirthMonth)-1], userBirthYear, hadControlDigit)
 
                                     else:
                                         print(' invalid control digit ')
@@ -130,17 +134,18 @@ def verify():
                                     print()
 
                             else:
-                                print(' invalid day - numbers from 0 to 31 allowed ')
+                                print(' you enter a birth number suggesting you are more than 100 years old ')
                                 print()
 
                         else:
-                            print('you enter a birth number suggesting you are more than 100 years old')
+                            print(' invalid day - (1-31 allowed) ')
                             print()
+                     
                     else:
-                        print(' invalid century ')
-                        print()
+                        print(' invalid month (0-12 and 50-62 allowed) ')
+
                 else:
-                    print(' invalid month (0-12 and 50-62 allowed)')
+                    print(' invalid format - cannot identify whether man or female ')
                     print()
             else:
                 print(' length error - the length of a birth number should be ten characters or eleven with a slash')
@@ -149,11 +154,16 @@ def verify():
         except ValueError:
             print(' format error ')
 
-def output(controlDigit, sex, age, birtDay, birthMonth, birthYear):
+def output(controlDigit, sex, age, birtDay, birthMonth, birthYear, hadConrolDigit):
     try:
+        if hadConrolDigit:
+            controlDigitMessage = 'control digit ' + str(controlDigit) + ' is VALID'
+        else:
+            controlDigitMessage = 'you were born before 1954 and your birth number did not contain a control digit, if it did the control digit would be: ' + str(controlDigit)
+
         print() #empty line
         print('YAY! THE PROVIDED BIRTH NUMBER IS VALID AND FOLLOWING INFORMATION WAS FETCHED')
-        print(f'control digit {controlDigit} is VALID')
+        print(controlDigitMessage)
         print(f'Sex: {sex}')
         print(f'Age: {age}')
         print(f'Date of Birth: {birtDay}. of {birthMonth} {birthYear}')
