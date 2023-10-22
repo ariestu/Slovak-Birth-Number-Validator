@@ -133,7 +133,7 @@ def verify():
                                     print()
 
                             else:
-                                print(' you enter a birth number suggesting you are more than 100 years old ')
+                                print(f' you enter a birth number suggesting you are more than {ageLimit} years old ')
                                 print()
 
                         else:
